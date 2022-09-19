@@ -14,6 +14,7 @@ public class SQLiteViewer extends JFrame {
 
     private static JTextArea queryTextArea;
     private static JTable table;
+    private static JButton executeButton;
 
 
     public SQLiteViewer() {
@@ -54,11 +55,13 @@ public class SQLiteViewer extends JFrame {
         queryTextArea = new JTextArea();
         queryTextArea.setName("QueryTextArea");
         forceSize(queryTextArea, 420, 35);
+        queryTextArea.setEnabled(false);
         add(queryTextArea);
 
-        JButton executeButton = new JButton("Execute");
+         executeButton = new JButton("Execute");
         executeButton.setName("ExecuteQueryButton");
         executeButton.addActionListener(e -> runQuery());
+        executeButton.setEnabled(false);
         add(executeButton);
 
         MyTableModel tableModel = new MyTableModel();
@@ -75,16 +78,28 @@ public class SQLiteViewer extends JFrame {
 
     private static void connectToDatabase() {
         comboBox.removeAllItems();
-        ArrayList<ArrayList<String>> columnAndData = DbConnection.runQuery(databaseName.getText().trim());
-        List<ArrayList<String>> listOfTables = columnAndData.subList(1, columnAndData.size());
-        ArrayList<String> Tables = new ArrayList<>();
-        for (List<String> list : listOfTables) {
-            Tables.add(list.get(0));
+        try {
+            ArrayList<ArrayList<String>> columnAndData = DbConnection.runQuery(databaseName.getText().trim());
+            List<ArrayList<String>> listOfTables = columnAndData.subList(1, columnAndData.size());
+            ArrayList<String> Tables = new ArrayList<>();
+            for (List<String> list : listOfTables) {
+                Tables.add(list.get(0));
+            }
+            Tables.forEach(comboBox::addItem);
+            executeButton.setEnabled(true);
+            queryTextArea.setEnabled(true);
+
+        }catch (RuntimeException e){
+            queryTextArea.setEnabled(false);
+            executeButton.setEnabled(false);
+            JOptionPane.showMessageDialog(new Frame(), "File doesn't exist!");
+
         }
-        Tables.forEach(comboBox::addItem);
+
     }
 
     private static void runQuery() {
+        try {
         String query = queryTextArea.getText();
         ArrayList<ArrayList<String>> columnAndData = DbConnection.runQuery(databaseName.getText().trim(), query);
         List<ArrayList<String>> data = columnAndData.subList(1, columnAndData.size());
@@ -92,6 +107,10 @@ public class SQLiteViewer extends JFrame {
         MyTableModel model = new MyTableModel(columnAndData.get(0), data);
         table.setModel(model);
         model.fireTableDataChanged();
+        }catch (RuntimeException e){
+            JOptionPane.showMessageDialog(new Frame(), e.getMessage());
+
+        }
 
     }
 
