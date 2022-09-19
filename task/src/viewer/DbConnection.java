@@ -2,28 +2,42 @@ package viewer;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DbConnection {
-    public static ArrayList<String> connect(String databaseName) {
+    public static ArrayList<ArrayList<String>> connect(String databaseName,String query) {
         Connection conn = null;
-        ArrayList<String> listOfTables = new ArrayList<>();
+        ArrayList<ArrayList<String>> columnValues = new ArrayList<>();
+        ArrayList<String> columnNames = new ArrayList<>();
         try {
             // db parameters
-//            String url = "jdbc:sqlite:/home/muy/IdeaProjects/SQLite Viewer/SQLite Viewer/task/src/" + databaseName;
+//            String url = "jdbc:sqlite:/home/muy/" + databaseName;
             String url = "jdbc:sqlite:" + databaseName;
             // create a connection to the database
             conn = DriverManager.getConnection(url);
 
             System.out.println("Connection to SQLite has been established.");
             Statement statement = conn.createStatement();
-            try (ResultSet tableNames = statement.executeQuery("SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'")) {
-                while (tableNames.next()) {
-                    // Retrieve column values
-                    String name = tableNames.getString("name");
-                    listOfTables.add(name);
-
-                    System.out.printf("\tName: %s%n", name);
+            try (ResultSet resultSet = statement.executeQuery(query)) {
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                for (int columnNumber = 1; columnNumber <= columnCount; columnNumber++) {
+                    String name = metaData.getColumnName(columnNumber);
+                    columnNames.add(name);
                 }
+                columnValues.add(columnNames);
+                while (resultSet.next()) {
+                    // Retrieve column values
+                    ArrayList<String> data = new ArrayList<>();
+                    for (int columnNumber = 1; columnNumber <= columnCount; columnNumber++) {
+                        data.add(resultSet.getString(columnNumber));
+                    }
+                    columnValues.add(data);
+
+                }
+                System.out.println(columnNames);
+                System.out.println(columnValues);
             }
 
         } catch (SQLException e) {
@@ -37,6 +51,17 @@ public class DbConnection {
                 System.out.println(ex.getMessage());
             }
         }
-        return listOfTables.isEmpty() ? null : listOfTables;
+        return columnValues;
+    }
+
+    public static ArrayList<ArrayList<String>> runQuery(String database, String query) {
+
+        return connect(database,query);
+    }
+
+    public static ArrayList<ArrayList<String>> runQuery(String database) {
+        String query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
+
+        return connect(database,query);
     }
 }
