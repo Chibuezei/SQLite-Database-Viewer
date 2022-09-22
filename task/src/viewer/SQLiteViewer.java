@@ -22,7 +22,6 @@ public class SQLiteViewer extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(700, 900);
         setLayout(new FlowLayout(FlowLayout.LEFT, 20, 10));
-//        setResizable(false);
         components();
         setLocationRelativeTo(null);
         setVisible(true);
@@ -70,19 +69,21 @@ public class SQLiteViewer extends JFrame {
         table.setName("Table");
         tableModel.addTableModelListener(new CustomListener()); //Adds the TableModelListener
 
-
         JScrollPane sp = new JScrollPane(table);
         add(sp);
 
     }
 
+    /**
+     * This method is used to establish the initial connection to the database and populate the comboBox with all the tables in the database
+     */
     private static void connectToDatabase() {
         comboBox.removeAllItems();
         try {
-            ArrayList<ArrayList<String>> columnAndData = DbConnection.runQuery(databaseName.getText().trim());
+            ArrayList<ArrayList<String>> columnAndData = DbConnection.runQuery(databaseName.getText().trim());//returns columnName and data
             List<ArrayList<String>> listOfTables = columnAndData.subList(1, columnAndData.size());
             ArrayList<String> Tables = new ArrayList<>();
-            for (List<String> list : listOfTables) {
+            for (List<String> list : listOfTables) {//
                 Tables.add(list.get(0));
             }
             Tables.forEach(comboBox::addItem);
@@ -90,7 +91,7 @@ public class SQLiteViewer extends JFrame {
             queryTextArea.setEnabled(true);
 
         }catch (RuntimeException e){
-            queryTextArea.setEnabled(false);
+            queryTextArea.setEnabled(false);//if there is an exception, disable the query and execute buttons
             executeButton.setEnabled(false);
             JOptionPane.showMessageDialog(new Frame(), "File doesn't exist!");
 
@@ -99,6 +100,9 @@ public class SQLiteViewer extends JFrame {
     }
 
     private static void runQuery() {
+        /**
+         * method to run the user query and populate the JTable with the result
+         */
         try {
         String query = queryTextArea.getText();
         ArrayList<ArrayList<String>> columnAndData = DbConnection.runQuery(databaseName.getText().trim(), query);
@@ -140,7 +144,6 @@ class MyTableModel extends AbstractTableModel {
     public MyTableModel(ArrayList<String> columns, List<ArrayList<String>> data) {
         this.data = data;
         this.columns = columns;
-//        System.out.println(columns + " " + data);
     }
 
     @Override

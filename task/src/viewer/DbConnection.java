@@ -9,7 +9,6 @@ public class DbConnection {
         ArrayList<ArrayList<String>> columnValues = new ArrayList<>();
         ArrayList<String> columnNames = new ArrayList<>();
         try {
-            // db parameters
 //            String url = "jdbc:sqlite:/home/muy/" + databaseName;
             String url = "jdbc:sqlite:" + databaseName;
             // create a connection to the database
@@ -34,17 +33,15 @@ public class DbConnection {
                     columnValues.add(data);
 
                 }
-                System.out.println(columnNames);
-                System.out.println(columnValues);
-
-                if (columnValues.size() <= 1) {//put this here to pass test #8, please remove
+                //sqlLite creates a database when you try to initiate connection to a non-existing one, this is not desired.
+                if (columnValues.size() <= 1) {
                     throw new SQLException("Wrong file name!");
                 }
             }
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e.getMessage());//I put this here so that i can catch it in the methods calling this one.
         } finally {
             try {
                 if (conn != null) {
@@ -58,13 +55,11 @@ public class DbConnection {
     }
 
     public static ArrayList<ArrayList<String>> runQuery(String database, String query) {
-
         return connect(database, query);
     }
 
     public static ArrayList<ArrayList<String>> runQuery(String database) {
         String query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
-
         return connect(database, query);
     }
 }
